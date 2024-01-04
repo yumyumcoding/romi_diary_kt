@@ -5,56 +5,27 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.techtown.romi_diary_kt.DatabaseHelper
+import org.techtown.romi_diary_kt.R
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mRvDiary: RecyclerView
     private lateinit var mAdapter: DiaryListAdapter
-    private lateinit var mLstDiary: ArrayList<DiaryModel>
+    private var mLstDiary: ArrayList<DiaryModel> = ArrayList()
+    private lateinit var mDatabaseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mLstDiary = ArrayList()
+        // 데이터베이스 객체 초기화
+        mDatabaseHelper = DatabaseHelper(this)
 
         mRvDiary = findViewById(R.id.rv_diary)
-
         mAdapter = DiaryListAdapter()
 
-        // 다이어리 샘플 아이템 1개 생성
-        val item = DiaryModel().apply {
-            id = 0
-            title = "다이어리 어플 만들기 도전!"
-            content = "1일차"
-            userDate = "2023/12/17/SAT"
-            writeDate = "2023/12/17/SAT"
-            weatherType = 0
-        }
-        mLstDiary.add(item)
-
-        val item2 = DiaryModel().apply {
-            id = 0
-            title = "다이어리 어플 만들기 도전!"
-            content = "2일차"
-            userDate = "2023/12/17/SAT"
-            writeDate = "2023/12/17/SAT"
-            weatherType = 1
-        }
-        mLstDiary.add(item2)
-
-        val item3 = DiaryModel().apply {
-            id = 0
-            title = "다이어리 어플 만들기 도전!"
-            content = "3일차"
-            userDate = "2023/12/17/SAT"
-            writeDate = "2023/12/17/SAT"
-            weatherType = 2
-        }
-        mLstDiary.add(item3)
-
-        mAdapter.setSampleList(mLstDiary)
         mRvDiary.adapter = mAdapter
 
         val floatingActionButton = findViewById<FloatingActionButton>(R.id.btn_write)
@@ -64,5 +35,25 @@ class MainActivity : AppCompatActivity() {
             // 작성하기 화면으로 이동
             startActivity(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 액티비티의 재개
+
+        // get load list
+        setLoadRecentList()
+    }
+
+    private fun setLoadRecentList() {
+        // 최근 데이터베이스 정보를 가져와서 리사이클러뷰에 갱신해준다.
+
+        // 이전에 배열 리스트에 저장된 데이터가 있으면 비워버림.
+        if (!mLstDiary.isEmpty()) {
+            mLstDiary.clear()
+        }
+
+        mLstDiary = mDatabaseHelper.getDiaryListFromDB() // 데이터베이스로부터 저장되어 있는 DB를 확인하여 가져옴.
+        mAdapter.setListInit(mLstDiary)
     }
 }
